@@ -30,63 +30,64 @@ make clean install
 And then in the database:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS redis;
+CREATE EXTENSION redis;
 ```
+
+## Settings
+
+Settings can be specified globally (using **postgresql.conf** or **ALTER SYSTEM ... SET**),
+at the database level (using **ALTER DATABASE ... SET**), or at the role level
+(using ALTER ROLE ... SET).
+
+* **redis.host** - Redis client host setting.
+* **redis.port** - Redis client port setting.
 
 ## Usage
 
 **redis_status**()
 
-Returns the status of the underlying Redis client.
+Returns the status of the Redis client.
+
+**redis_connect**()
+
+Connects the Redis client using the **redis.host** and **redis.port** configuratin settings.
+
+**redis_disconnect**()
+
+Disconnects the Redis client.
 
 **redis_publish**(*channel* text, *message* text)
 
 Publishes a message on the channel provided.
 
-If there is no underlying Redis client currently connected, it will first create a new connection before attempting to publish the message.
+If the Redis client is not currently connected, it will first create a new connection before attempting to publish the message.
 
 ## Roadmap
 
-- Add custom connection configuration support. Maybe use postgresql.conf settings to setup? Use connection string?
-- Add a pool of Redis connections to use? Round-robin?
+- Return record with columns host text, port int, connected boolean.
+- Add a set of Redis connections to use?
 - Add subscribe and psubscribe support that executes a PostgreSQL function?
 
 ## Examples
 
 ### Basic Example
 
-In Redis:
-
-```
-subscribe mychannel
-```
-
-In PostgreSQL:
-
 ```sql
 CREATE EXTENSION IF NOT EXISTS redis;
 
-SELECT redis_status(); -- Disconnected
+SELECT redis_connect();
 
 SELECT redis_publish('mychannel', 'Hello World');
 
-SELECT redis_status(); -- Connected
+SELECT redis_disconnect();
 ```
 
 ### Trigger Example
 
-In Redis:
-
-```
-psubscribe users:*
-```
-
-In PostgreSQL:
-
 ```sql
 CREATE EXTENSION IF NOT EXISTS redis;
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS products (
     id serial,
     name varchar(255)
 );
@@ -98,21 +99,19 @@ CREATE OR REPLACE FUNCTION after_change()
             channel text;
             message json;
         BEGIN
-            channel = 'users:' || NEW.id::text;
+            channel = 'products:' || NEW.id::text;
             message = to_jsonb(NEW);
 
-            PERFORM redis_publish('users:, message::text);
+            PERFORM redis_publish('products:, message::text);
             RETURN NULL;
         END;
     $$
     LANGUAGE plpgsql;
 
-CREATE TRIGGER users_after_change
-    AFTER INSERT OR UPDATE ON users
+CREATE TRIGGER products_after_change
+    AFTER INSERT OR UPDATE ON products
     FOR EACH ROW
     EXECUTE PROCEDURE after_change();
 
-INSERT INTO users (name) VALUES ('Alice'), ('Bob');
-
-UPDATE users SET name = 'Robert' WHERE name = 'Bob';
+INSERT INTO products (name) VALUES ('Ale'), ('Beer'), ('Cider');
 ```
