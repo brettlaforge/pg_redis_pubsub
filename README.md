@@ -35,9 +35,13 @@ CREATE EXTENSION redis;
 
 ## Settings
 
-Settings can be specified globally (using **postgresql.conf** or **ALTER SYSTEM ... SET**),
-at the database level (using **ALTER DATABASE ... SET**), or at the role level
-(using ALTER ROLE ... SET).
+Settings can be 
+* specified globally using `postgresql.conf` or `ALTER SYSTEM ... SET var = 'val'`
+* specified at the database level using `ALTER DATABASE ... SET var = 'val'`
+* specified at the role level using `ALTER ROLE ... SET var = 'val'`
+* specified at the session level using `ALTER SESSION ... SET var = 'val'`
+
+### GUC variables
 
 * **redis.host** - Redis client host setting.
 * **redis.port** - Redis client port setting.
@@ -102,7 +106,7 @@ CREATE OR REPLACE FUNCTION after_change()
             channel = 'products:' || NEW.id::text;
             message = to_jsonb(NEW);
 
-            PERFORM redis_publish('products:, message::text);
+            PERFORM redis_publish(channel, message::text);
             RETURN NULL;
         END;
     $$
