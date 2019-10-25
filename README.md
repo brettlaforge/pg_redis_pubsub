@@ -39,9 +39,11 @@ Settings can be
 * specified globally using `postgresql.conf` or `ALTER SYSTEM ... SET var = 'val'`
 * specified at the database level using `ALTER DATABASE ... SET var = 'val'`
 * specified at the role level using `ALTER ROLE ... SET var = 'val'`
-* specified at the session level using `ALTER SESSION ... SET var = 'val'`
+* specified at the session level using `SET var = 'val'`
 
-### GUC variables
+### GUC settings
+
+You can set/change the following variables with commands described above:
 
 * **redis.host** - Redis client host setting.
 * **redis.port** - Redis client port setting.
