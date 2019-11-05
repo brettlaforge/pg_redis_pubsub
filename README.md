@@ -7,7 +7,7 @@ This PostgreSQL extension allows you to connect to Redis and publish messages on
 To build you must have:
 
 - PostgreSQL 9.1+
-- HIREDIS C Client
+- HIREDIS C Client 13.0+
 
 #### HIREDIS
 
@@ -17,6 +17,14 @@ On Ubuntu 12.04+, it can be installed using the apt-get package [libhiredis-dev]
 
 ```sh
 sudo apt-get install libhiredis-dev
+```
+
+On Centos 7.6 you should build HIREDIS from source, or search for recent RPMs as system repository only has version 12 available which is too old for `pg_redis_pubsub`. For example, you can use [hiredis-last-0.13.3-1.el7.remi.x86_64.rpm](https://rpms.southbridge.ru/rhel7/stable/x86_64/hiredis-last-0.13.3-1.el7.remi.x86_64.rpm) and [hiredis-last-devel-0.13.3-1.el7.remi.x86_64.rpm](https://rpms.southbridge.ru/rhel7/stable/x86_64/hiredis-last-devel-0.13.3-1.el7.remi.x86_64.rpm). Download two RPMs and run:
+
+```sh
+sudo yum install \
+  hiredis-last-devel-0.13.3-1.el7.remi.x86_64.rpm \
+  hiredis-last-0.13.3-1.el7.remi.x86_64.rpm
 ```
 
 ## Installation
